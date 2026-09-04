@@ -18,3 +18,15 @@ datasources:
     jsonData:
       httpMethod: POST
       timeInterval: 15s
+  # Isolated load SUT (Selectel VM). Scrape allowed only from Box2 (ufw :9091).
+  # Not Box2 :9090 (selenoid-warm-pool) and not docker service `prometheus:9090`.
+  - name: load-sut
+    uid: load-sut
+    type: prometheus
+    access: proxy
+    url: http://95.213.181.142:9091
+    isDefault: false
+    editable: false
+    jsonData:
+      httpMethod: POST
+      timeInterval: 15s

@@ -44,7 +44,7 @@ docker compose -f docker-compose.yml -f docker-compose.observe.yml up -d
 | [`docker-compose.prod.yml`](docker-compose.prod.yml) | `restart: unless-stopped` |
 | [`docker-compose.observe.yml`](docker-compose.observe.yml) | сеть `qa-guru-observe` → Prometheus |
 | [`grafana.ini`](grafana.ini) | domain, root_url, без sign-up |
-| [`provisioning/`](provisioning/) | datasources (Testdata + Prometheus) и dashboards |
+| [`provisioning/`](provisioning/) | datasources (Testdata + Box2 Prometheus + **load-sut**) и dashboards |
 | [`nginx/grafana.qa.guru.nginx`](nginx/grafana.qa.guru.nginx) | TLS vhost, websockets |
 | [`deploy/`](deploy/) | Box2 install / nginx / DNS / smoke |
 
