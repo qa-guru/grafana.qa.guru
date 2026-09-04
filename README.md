@@ -34,7 +34,7 @@ docker network create qa-guru-observe 2>/dev/null || true
 docker compose -f docker-compose.yml -f docker-compose.observe.yml up -d
 ```
 
-Дашборд **Box2 observer** (`box2-observer.json`) — CPU/RAM/load. **Load SUT observer** (`load-sut-observer.json`, datasource `load-sut`) — node-exporter на load-VM + JVM/HTTP p95 с `backend-java-spring` management scrape. **ollama.qa.guru GPU** (`ollama-gpu.json`) — VRAM / loaded models / exporter. На Box2 Prometheus снаружи `:9091` (host `:9090` = selenoid-warm-pool).
+Дашборд **Box2 observer** (`box2-observer.json`) — CPU/RAM/load (`job=node`). **Box1 observer** (`box1-observer.json`) — host + Selenoid hub `/status`. **Box3 observer** (`box3-observer.json`) — zoo host. **Load SUT observer** (`load-sut-observer.json`, datasource `load-sut`) — node-exporter на load-VM + JVM/HTTP p95 с `backend-java-spring` management scrape. **ollama.qa.guru GPU** (`ollama-gpu.json`) — VRAM / loaded models / exporter. На Box2 Prometheus снаружи `:9091` (host `:9090` = selenoid-warm-pool).
 
 ## Структура
 
