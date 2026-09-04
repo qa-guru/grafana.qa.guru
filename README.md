@@ -8,7 +8,7 @@ Production **Grafana OSS** on Box 2 — **https://grafana.qa.guru**
 |--|--|
 | URL | https://grafana.qa.guru |
 | Edition | Grafana OSS **13.0.2** (`grafana/grafana-oss:13.0.2`) |
-| Host | Box 2 `89.248.193.83` — рядом Jenkins, Sonar, Ollama |
+| Host | Box 2 `89.248.193.83` — рядом Jenkins, Sonar |
 | Path | `/opt/grafana.qa.guru` |
 | Auth | login `admin` · `admin@qa.guru` — пароль локально в `~/.config/grafana/admin.env` |
 
@@ -34,7 +34,7 @@ docker network create qa-guru-observe 2>/dev/null || true
 docker compose -f docker-compose.yml -f docker-compose.observe.yml up -d
 ```
 
-Дашборд **Box2 observer** (`provisioning/dashboards/json/box2-observer.json`) — CPU/RAM/load. На Box2 Prometheus снаружи `:9091` (host `:9090` = selenoid-warm-pool).
+Дашборд **Box2 observer** (`provisioning/dashboards/json/box2-observer.json`) — CPU/RAM/load. **ollama.qa.guru GPU** (`ollama-gpu.json`) — VRAM / loaded models / exporter. На Box2 Prometheus снаружи `:9091` (host `:9090` = selenoid-warm-pool).
 
 ## Структура
 
