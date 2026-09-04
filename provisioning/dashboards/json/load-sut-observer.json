@@ -1,6 +1,6 @@
 {
   "annotations": { "list": [] },
-  "description": "Isolated load SUT (load.autotests.ai). node-exporter only — no JVM until actuator/prometheus exists.",
+  "description": "Isolated load SUT (load.autotests.ai). node-exporter + backend-java-spring JVM/HTTP from loopback :8801 /actuator/prometheus (not public).",
   "editable": false,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -120,6 +120,105 @@
       ],
       "title": "Disk I/O",
       "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "fieldConfig": { "defaults": { "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] } }, "overrides": [] },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 28 },
+      "id": 11,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "up{job=\"backend-java-spring\"}", "legendFormat": "jvm", "refId": "A" }],
+      "title": "JVM target",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "gridPos": { "h": 4, "w": 5, "x": 4, "y": 28 },
+      "id": 12,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "sum(jvm_memory_used_bytes{job=\"backend-java-spring\",area=\"heap\"})", "legendFormat": "heap", "refId": "A" }],
+      "title": "JVM heap used",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1 }, "overrides": [] },
+      "gridPos": { "h": 4, "w": 5, "x": 9, "y": 28 },
+      "id": 13,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "process_cpu_usage{job=\"backend-java-spring\"}", "legendFormat": "process cpu", "refId": "A" }],
+      "title": "JVM process CPU",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "gridPos": { "h": 4, "w": 5, "x": 14, "y": 28 },
+      "id": 14,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "sum(rate(http_server_requests_seconds_count{job=\"backend-java-spring\"}[5m]))", "legendFormat": "rps", "refId": "A" }],
+      "title": "HTTP rps",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "gridPos": { "h": 4, "w": 5, "x": 19, "y": 28 },
+      "id": 15,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{job=\"backend-java-spring\"}[5m])))", "legendFormat": "p95", "refId": "A" }],
+      "title": "HTTP p95",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+      "id": 16,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "sum by (id) (jvm_memory_used_bytes{job=\"backend-java-spring\",area=\"heap\"})", "legendFormat": "used {{id}}", "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "sum by (id) (jvm_memory_max_bytes{job=\"backend-java-spring\",area=\"heap\"})", "legendFormat": "max {{id}}", "refId": "B" }
+      ],
+      "title": "JVM heap",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+      "id": 17,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "histogram_quantile(0.95, sum by (le, uri) (rate(http_server_requests_seconds_bucket{job=\"backend-java-spring\"}[5m])))", "legendFormat": "p95 {{uri}}", "refId": "A" }
+      ],
+      "title": "HTTP p95 by URI",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 40 },
+      "id": 18,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "sum by (uri, status) (rate(http_server_requests_seconds_count{job=\"backend-java-spring\"}[5m]))", "legendFormat": "{{status}} {{uri}}", "refId": "A" }
+      ],
+      "title": "HTTP rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 40 },
+      "id": 19,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "rate(jvm_gc_pause_seconds_count{job=\"backend-java-spring\"}[5m])", "legendFormat": "gc {{action}} {{cause}}", "refId": "A" }
+      ],
+      "title": "JVM GC pause rate",
+      "type": "timeseries"
     }
   ],
   "schemaVersion": 39,
@@ -130,5 +229,5 @@
   "timezone": "browser",
   "title": "Load SUT observer",
   "uid": "load-sut-observer",
-  "version": 1
+  "version": 2
 }
