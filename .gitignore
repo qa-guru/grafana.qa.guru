@@ -1,3 +1,5 @@
 .env
 *.log
 admin.env
+__pycache__/
+*.pyc
