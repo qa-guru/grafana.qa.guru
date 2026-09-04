@@ -34,6 +34,8 @@ docker network create qa-guru-observe 2>/dev/null || true
 docker compose -f docker-compose.yml -f docker-compose.observe.yml up -d
 ```
 
+Дашборд **Box2 observer** (`provisioning/dashboards/json/box2-observer.json`) — CPU/RAM/load. На Box2 Prometheus снаружи `:9091` (host `:9090` = selenoid-warm-pool).
+
 ## Структура
 
 | Путь | Назначение |

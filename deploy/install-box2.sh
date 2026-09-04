@@ -48,7 +48,14 @@ EOF
 scp -q "${tmp_env}" "${HOST}:${REMOTE}/.env"
 ssh "${HOST}" "chmod 600 '${REMOTE}/.env'"
 
-ssh "${HOST}" "cd '${REMOTE}' && docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d"
-ssh "${HOST}" "cd '${REMOTE}' && docker compose -f docker-compose.yml -f docker-compose.prod.yml ps"
+ssh "${HOST}" "cd '${REMOTE}' && if docker network inspect qa-guru-observe >/dev/null 2>&1; then
+  echo 'observe network: attach Grafana'
+  docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.observe.yml up -d
+  docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.observe.yml ps
+else
+  echo 'observe network: missing (Prometheus not up yet) — Grafana only'
+  docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+  docker compose -f docker-compose.yml -f docker-compose.prod.yml ps
+fi"
 
 echo "OK: Grafana compose on ${HOST}:${REMOTE}"

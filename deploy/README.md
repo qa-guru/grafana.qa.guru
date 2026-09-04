@@ -27,10 +27,4 @@ python3 ./deploy/configure-dns.py --apply
 ./deploy/smoke.sh
 ```
 
-Prometheus (отдельный репозиторий) поднимается **рядом**, не в этом compose. После сети `qa-guru-observe`:
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.observe.yml up -d
-```
-
-на Box2 из `/opt/grafana.qa.guru`.
+Prometheus (отдельный репозиторий) поднимается **рядом**. На Box2 Grafana цепляется к `qa-guru-observe` из `install-box2.sh`, если сеть уже есть. Host-порт Prometheus: **9091**.
