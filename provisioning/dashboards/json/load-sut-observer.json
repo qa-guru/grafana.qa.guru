@@ -1,6 +1,6 @@
 {
   "annotations": { "list": [] },
-  "description": "Isolated load SUT (load.autotests.ai). Live APIs: backend-java-spring + backend-kotlin-spring. node-exporter is host-wide. JVM/HTTP panels follow $cell (management :8081 scrape /actuator/prometheus, not public).",
+  "description": "Isolated load SUT (load.autotests.ai). One live backend at a time (java / kotlin / python flask|fastapi|django). node-exporter is host-wide. JVM/HTTP panels follow $cell (management :8081 scrape /actuator/prometheus, not public).",
   "editable": false,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -223,11 +223,11 @@
   ],
   "schemaVersion": 39,
   "tags": ["qa.guru", "load-sut"],
-  "templating": { "list": [{ "current": { "selected": true, "text": "backend-java-spring", "value": "backend-java-spring" }, "hide": 0, "includeAll": false, "label": "cell", "multi": false, "name": "cell", "options": [{ "selected": true, "text": "backend-java-spring", "value": "backend-java-spring" }, { "selected": false, "text": "backend-kotlin-spring", "value": "backend-kotlin-spring" }], "query": "backend-java-spring,backend-kotlin-spring", "skipUrlSync": false, "type": "custom" }] },
+  "templating": { "list": [{ "current": { "selected": true, "text": "backend-java-spring", "value": "backend-java-spring" }, "hide": 0, "includeAll": false, "label": "cell", "multi": false, "name": "cell", "options": [{ "selected": true, "text": "backend-java-spring", "value": "backend-java-spring" }, { "selected": false, "text": "backend-kotlin-spring", "value": "backend-kotlin-spring" }, { "selected": false, "text": "backend-python-flask", "value": "backend-python-flask" }, { "selected": false, "text": "backend-python-fastapi", "value": "backend-python-fastapi" }, { "selected": false, "text": "backend-python-django", "value": "backend-python-django" }], "query": "backend-java-spring,backend-kotlin-spring,backend-python-flask,backend-python-fastapi,backend-python-django", "skipUrlSync": false, "type": "custom" }] },
   "time": { "from": "now-1h", "to": "now" },
   "timepicker": {},
   "timezone": "browser",
   "title": "Load SUT observer",
   "uid": "load-sut-observer",
-  "version": 2
+  "version": 3
 }
