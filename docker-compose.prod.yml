@@ -1,0 +1,5 @@
+# Prod override — restart policy (DOCKER-CANON § multi-file)
+# Publish: bind nginx → 127.0.0.1:3000 (GRAFANA_HTTP_PORT=3000 in host .env).
+services:
+  grafana:
+    restart: unless-stopped

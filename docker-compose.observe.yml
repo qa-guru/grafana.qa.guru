@@ -1,0 +1,15 @@
+# Optional overlay: join Prometheus network from qa-guru/prometheus.qa.guru.
+#   docker network create qa-guru-observe   # if Prometheus is not up yet
+#   docker compose -f docker-compose.yml -f docker-compose.observe.yml up -d
+#
+# Datasource URL in provisioning: http://prometheus:9090
+networks:
+  observe:
+    name: qa-guru-observe
+    external: true
+
+services:
+  grafana:
+    networks:
+      - default
+      - observe
