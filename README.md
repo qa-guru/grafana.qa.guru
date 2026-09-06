@@ -10,7 +10,7 @@ Production **Grafana OSS** on Box 2 — **https://grafana.qa.guru**
 | Edition | Grafana OSS **13.0.2** (`grafana/grafana-oss:13.0.2`) |
 | Host | Box 2 `89.248.193.83` — рядом Jenkins, Sonar |
 | Path | `/opt/grafana.qa.guru` |
-| Auth | login `admin` · `admin@qa.guru` — пароль локально в `~/.config/grafana/admin.env` |
+| Auth | Keycloak SSO (`generic_oauth`) + парольная форма для break-glass `admin` · `admin@qa.guru` — пароль локально в `~/.config/grafana/admin.env` |
 
 ## Для учащихся
 
@@ -43,11 +43,25 @@ docker compose -f docker-compose.yml -f docker-compose.observe.yml up -d
 | [`docker-compose.yml`](docker-compose.yml) | Grafana OSS, loopback publish, volume sqlite |
 | [`docker-compose.prod.yml`](docker-compose.prod.yml) | `restart: unless-stopped` |
 | [`docker-compose.observe.yml`](docker-compose.observe.yml) | сеть `qa-guru-observe` → Prometheus |
-| [`grafana.ini`](grafana.ini) | domain, root_url, без sign-up |
+| [`grafana.ini`](grafana.ini) | domain, root_url, без sign-up, `[auth.generic_oauth]` (без секрета) |
 | [`provisioning/`](provisioning/) | datasources (Testdata + Box2 Prometheus + **load-sut**) и dashboards |
 | [`nginx/grafana.qa.guru.nginx`](nginx/grafana.qa.guru.nginx) | TLS vhost, websockets |
-| [`deploy/`](deploy/) | Box2 install / nginx / DNS / smoke |
+| [`deploy/`](deploy/) | Box2 install / nginx / DNS / smoke / SSO |
 
-Секреты (не в git): `~/.config/grafana/admin.env`.
+Секреты (не в git): `~/.config/grafana/admin.env`, `~/.config/grafana/oidc.env`.
+
+## SSO
+
+Вход через [auth.qa.guru](https://auth.qa.guru) (Keycloak, клиент `grafana`). Роль берётся из claim `groups` — `role_attribute_path`, это есть в OSS; **Team Sync — Enterprise**, поэтому команды Grafana остаются ручными.
+
+| Группа в Keycloak | Роль в Grafana |
+|---|---|
+| `/staff` | Admin (орг, **не** server admin) |
+| `/mentors` | Viewer |
+| `/students` | вход запрещён — `role_attribute_strict` |
+
+Парольную форму (`disable_login_form`) **не** выключать: это единственная дверь для break-glass `admin` и для двух преподавателей курса по нагрузке, чьи логины — адреса из GetCourse и которых нет в Keycloak.
+
+Подробности и приёмка — [`deploy/README.md`](deploy/README.md) § SSO.
 
 Monorepo wrapper: `projects/services-home/grafana-qa-guru-home/`.
