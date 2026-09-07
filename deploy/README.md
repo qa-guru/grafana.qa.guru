@@ -42,7 +42,7 @@ python3 deploy/oidc.py verify        # 5. приёмка целиком
 python3 deploy/oidc.py break-glass   # 6. admin входит при остановленном Keycloak
 ```
 
-Отдельно: `login-check` (реальные пилотные люди), `probe-staff` (одноразовый человек в `/staff` → Admin, удаляется), `logout-check` (RP-initiated logout), `rollback --dump <tar.gz>`.
+Отдельно: `login-check` (`staff-pilot` / `mentor-pilot` / `student-pilot` из `pilot.env`, не живой `svasenkov`), `probe-staff` (одноразовый человек в `/staff` → Admin, удаляется), `logout-check` (RP-initiated logout), `rollback --dump <tar.gz>`.
 
 Что важно знать перед правкой:
 
