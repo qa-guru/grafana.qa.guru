@@ -13,7 +13,7 @@ Nothing secret is printed.
   python3 deploy/oidc.py configure     # deploy grafana.ini + secret, recreate, wait for health
   python3 deploy/oidc.py login-check   # real sign-in with the pilot people
   python3 deploy/oidc.py probe-staff   # /staff → Admin on a disposable person, then remove it
-  python3 deploy/oidc.py logout-check  # RP-initiated logout lands back on the Grafana login page
+  python3 deploy/oidc.py logout-check  # staff-pilot + mentor-pilot: end_session, Keycloak asks for password
   python3 deploy/oidc.py verify        # acceptance
   python3 deploy/oidc.py break-glass   # local admin + API with Keycloak stopped
   python3 deploy/oidc.py rollback      # back to the dumped grafana.ini (dumps current first)
@@ -428,6 +428,9 @@ def cmd_configure() -> int:
           f"login_attribute_path={oauth.get('login_attribute_path')}")
     print(f"scopes={oauth.get('scopes')!r}")
     print(f"role_attribute_path={oauth.get('role_attribute_path')!r}")
+    print(f"signout_redirect_url={oauth.get('signout_redirect_url')!r}")
+    if oauth.get("signout_redirect_url") != SIGNOUT_URL:
+        raise SystemExit("signout_redirect_url is not Keycloak end_session for client grafana")
     return 0
 
 
@@ -665,22 +668,36 @@ def cmd_probe_staff(keep: bool = False) -> int:
 
 
 def cmd_logout_check() -> int:
-    kind, user, password, _ = pilots()[0]
-    res = oidc_login(user, password)
-    if res["api_code"] != 200:
-        raise SystemExit(f"{user} could not sign in, logout check is meaningless: {res['error']}")
-    sess: Session = res["session"]
-    url, page, status = sess.fetch(f"{GRAFANA_URL}/logout")
-    on_login = url.startswith(POST_LOGOUT_URI) or url.rstrip("/").endswith("/login")
-    code, _ = sess.api("/api/user")
-    print(f"{'OK  ' if on_login else 'FAIL'} logout landed on {url} (http {status})")
-    print(f"{'OK  ' if code != 200 else 'FAIL'} grafana session gone (api/user {code})")
-    # The Keycloak session must be gone too, otherwise the next click signs the person back in silently.
-    fresh = Session()
-    _, page2, _ = fresh.fetch(f"{GRAFANA_URL}/login/generic_oauth")
-    asks_password = "kc-form-login" in page2 or 'name="password"' in page2
-    print(f"{'OK  ' if asks_password else 'FAIL'} Keycloak asks for credentials again")
-    return 0 if (on_login and code != 200 and asks_password) else 1
+    """RP-initiated logout for staff-pilot and mentor-pilot. Students never get a Grafana session."""
+    rows = [(kind, user, password) for kind, user, password, expect in pilots() if kind in {"staff", "mentors"}]
+    have = {kind for kind, _, _ in rows}
+    missing = {"staff", "mentors"} - have
+    if missing:
+        raise SystemExit(f"logout-check needs staff and mentor pilots in {PILOT_ENV_FILE}; missing {sorted(missing)}")
+
+    rc = 0
+    for kind, user, password in rows:
+        res = oidc_login(user, password)
+        if res["api_code"] != 200:
+            print(f"FAIL {kind:<9} {user} could not sign in: {res['error']}")
+            rc = 1
+            continue
+        sess: Session = res["session"]
+        url, _page, status = sess.fetch(f"{GRAFANA_URL}/logout")
+        on_login = url.startswith(POST_LOGOUT_URI) or url.rstrip("/").endswith("/login")
+        code, _ = sess.api("/api/user")
+        # The Keycloak session must be gone too, otherwise the next click signs the person back in silently.
+        fresh = Session()
+        _, page2, _ = fresh.fetch(f"{GRAFANA_URL}/login/generic_oauth")
+        asks_password = "kc-form-login" in page2 or 'name="password"' in page2
+        ok = on_login and code != 200 and asks_password
+        print(f"{'OK  ' if ok else 'FAIL'} {kind:<9} {user}")
+        print(f"       logout landed on {url} (http {status})")
+        print(f"       grafana session gone (api/user {code})")
+        print(f"       Keycloak asks for credentials again={asks_password}")
+        if not ok:
+            rc = 1
+    return rc
 
 
 # ---------------------------------------------------------------------------
@@ -782,6 +799,19 @@ def cmd_verify() -> int:
         "server admin stays on the break-glass account",
     )
     check("issuer is auth.qa.guru", ISSUER in (oauth.get("auth_url") or ""), oauth.get("auth_url", "-"))
+    check(
+        "signout_redirect_url is Keycloak end_session (client grafana)",
+        oauth.get("signout_redirect_url") == SIGNOUT_URL,
+        (oauth.get("signout_redirect_url") or "-")[:120],
+    )
+    token = keycloak_token(auth_env())
+    grafana_clients = kc("GET", f"/admin/realms/{REALM}/clients?clientId={CLIENT_ID}", token) or []
+    grafana_attrs = (grafana_clients[0].get("attributes") or {}) if grafana_clients else {}
+    check(
+        "grafana client post.logout.redirect.uris",
+        grafana_attrs.get("post.logout.redirect.uris") == POST_LOGOUT_URI,
+        grafana_attrs.get("post.logout.redirect.uris", "-"),
+    )
     check("disable_login_form = false", auth.get("disable_login_form") == "false", "break-glass + local teachers")
     check(
         "oauth_allow_insecure_email_lookup = false",
