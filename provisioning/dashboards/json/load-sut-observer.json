@@ -229,9 +229,53 @@
     },
     {
       "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "description": "Scrape of .140:9105 from load-sut :9091. Not Pushgateway. Down = exporter/ufw, not an empty JTL.",
+      "fieldConfig": { "defaults": { "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] } }, "overrides": [] },
+      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 49 },
+      "id": 24,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "up{job=\"load-injector\"}", "legendFormat": "up", "refId": "A" }],
+      "title": "injector up",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "description": "load_injector_rps{injector,cell,run}. Empty while idle (no JTL window). Not SUT HTTP rps.",
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "gridPos": { "h": 4, "w": 6, "x": 4, "y": 49 },
+      "id": 25,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "load_injector_rps{cell=\"$cell\"}", "legendFormat": "{{injector}} {{run}}", "refId": "A" }],
+      "title": "injector rps",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "description": "load_injector_error_ratio{injector,cell,run} (0..1). Empty while idle.",
+      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0.01 }, { "color": "red", "value": 0.05 }] } }, "overrides": [] },
+      "gridPos": { "h": 4, "w": 7, "x": 10, "y": 49 },
+      "id": 26,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "load_injector_error_ratio{cell=\"$cell\"}", "legendFormat": "{{injector}} {{run}}", "refId": "A" }],
+      "title": "injector error ratio",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "description": "load_injector_p95_seconds{injector,cell,run}. Empty while idle. Not jmeter_*.",
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "gridPos": { "h": 4, "w": 7, "x": 17, "y": 49 },
+      "id": 27,
+      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
+      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "load_injector_p95_seconds{cell=\"$cell\"}", "legendFormat": "{{injector}} {{run}}", "refId": "A" }],
+      "title": "injector p95",
+      "type": "stat"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "load-sut" },
       "description": "Client rps from load_injector_rps vs SUT HTTP. Crosshair shared with the rest of the dashboard (graphTooltip 1). HTML of the tool stays on /runs/.",
       "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
-      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 49 },
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 53 },
       "id": 21,
       "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
       "targets": [
@@ -245,20 +289,20 @@
       "datasource": { "type": "prometheus", "uid": "load-sut" },
       "description": "Client error ratio. Empty when the injector is idle (GHA 1 VU does not scrape this exporter).",
       "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1 }, "overrides": [] },
-      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 49 },
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 53 },
       "id": 22,
       "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
       "targets": [
         { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "load_injector_error_ratio{cell=\"$cell\"}", "legendFormat": "injector {{injector}} {{run}}", "refId": "A" }
       ],
-      "title": "injector error ratio",
+      "title": "error ratio over time",
       "type": "timeseries"
     },
     {
       "datasource": { "type": "prometheus", "uid": "load-sut" },
       "description": "Client p95 (load_injector_p95_seconds) vs SUT histogram. Not jmeter_* .",
       "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
-      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 49 },
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 53 },
       "id": 23,
       "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
       "targets": [
@@ -277,5 +321,5 @@
   "timezone": "browser",
   "title": "Load SUT observer",
   "uid": "load-sut-observer",
-  "version": 4
+  "version": 5
 }
