@@ -1,6 +1,6 @@
 {
   "annotations": { "list": [] },
-  "description": "Isolated load SUT (load.autotests.ai). One live backend at a time (java / kotlin / python flask|fastapi|django). node-exporter is host-wide. JVM/HTTP panels follow $cell (management :8081 scrape /actuator/prometheus, not public).",
+  "description": "Isolated load SUT (load.autotests.ai). One live backend at a time (java / kotlin / python flask|fastapi|django). node-exporter is host-wide. JVM/HTTP panels follow $cell (management :8081 scrape /actuator/prometheus, not public). Injector strip is canonical load_injector_rps / error_ratio / p95_seconds (labels injector, cell, run) — not jmeter_*. Tool HTML stays on /runs/.",
   "editable": false,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -219,6 +219,54 @@
       ],
       "title": "JVM GC pause rate",
       "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 48 },
+      "id": 20,
+      "title": "Injector",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "description": "Client rps from load_injector_rps vs SUT HTTP. Crosshair shared with the rest of the dashboard (graphTooltip 1). HTML of the tool stays on /runs/.",
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 49 },
+      "id": 21,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "sum(rate(http_server_requests_seconds_count{job=\"$cell\"}[1m]))", "legendFormat": "SUT", "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "load_injector_rps{cell=\"$cell\"}", "legendFormat": "injector {{injector}} {{run}}", "refId": "B" }
+      ],
+      "title": "rps SUT vs injector",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "description": "Client error ratio. Empty when the injector is idle (GHA 1 VU does not scrape this exporter).",
+      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1 }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 49 },
+      "id": 22,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "load_injector_error_ratio{cell=\"$cell\"}", "legendFormat": "injector {{injector}} {{run}}", "refId": "A" }
+      ],
+      "title": "injector error ratio",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "description": "Client p95 (load_injector_p95_seconds) vs SUT histogram. Not jmeter_* .",
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 49 },
+      "id": 23,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{job=\"$cell\"}[1m])))", "legendFormat": "SUT p95", "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "load_injector_p95_seconds{cell=\"$cell\"}", "legendFormat": "injector p95 {{run}}", "refId": "B" }
+      ],
+      "title": "p95 SUT vs injector",
+      "type": "timeseries"
     }
   ],
   "schemaVersion": 39,
@@ -229,5 +277,5 @@
   "timezone": "browser",
   "title": "Load SUT observer",
   "uid": "load-sut-observer",
-  "version": 3
+  "version": 4
 }
