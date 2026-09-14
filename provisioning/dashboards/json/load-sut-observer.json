@@ -1,6 +1,8 @@
 {
-  "annotations": { "list": [] },
-  "description": "Isolated load SUT (load.autotests.ai). One live backend at a time (java / kotlin / python flask|fastapi|django). node-exporter is host-wide. JVM/HTTP panels follow $cell (management :8081 scrape /actuator/prometheus, not public). Injector strip is canonical load_injector_rps / error_ratio / p95_seconds (labels injector, cell, run) — not jmeter_*. Tool HTML stays on /runs/.",
+  "annotations": {
+    "list": []
+  },
+  "description": "Isolated load SUT (load.autotests.ai). Host/JVM/HTTP follow $cell. Shared Injector strip overlays client vs SUT. Per-tool rows (JMeter, Gatling, k6 open; Locust / Tank / Vegeta / Artillery collapsed) filter load_injector_* by injector label — not jmeter_* / gatling_* / k6_* / artillery_* series. Tool HTML stays on /runs/.",
   "editable": false,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -9,317 +11,2339 @@
   "liveNow": false,
   "panels": [
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
-      "fieldConfig": { "defaults": { "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] } }, "overrides": [] },
-      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 0 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
       "id": 1,
-      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "sum(up)", "legendFormat": "up", "refId": "A" }],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "sum(up)",
+          "legendFormat": "up",
+          "refId": "A"
+        }
+      ],
       "title": "up (jobs)",
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
-      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0.7 }, { "color": "red", "value": 0.9 }] } }, "overrides": [] },
-      "gridPos": { "h": 4, "w": 5, "x": 4, "y": 0 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.7
+              },
+              {
+                "color": "red",
+                "value": 0.9
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 4,
+        "y": 0
+      },
       "id": 2,
-      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m]))", "legendFormat": "cpu", "refId": "A" }],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "1 - avg(rate(node_cpu_seconds_total{mode=\"idle\"}[5m]))",
+          "legendFormat": "cpu",
+          "refId": "A"
+        }
+      ],
       "title": "CPU busy",
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
-      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0.75 }, { "color": "red", "value": 0.9 }] } }, "overrides": [] },
-      "gridPos": { "h": 4, "w": 5, "x": 9, "y": 0 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.75
+              },
+              {
+                "color": "red",
+                "value": 0.9
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 9,
+        "y": 0
+      },
       "id": 3,
-      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)", "legendFormat": "mem", "refId": "A" }],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)",
+          "legendFormat": "mem",
+          "refId": "A"
+        }
+      ],
       "title": "Memory used",
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
-      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0.8 }, { "color": "red", "value": 0.9 }] } }, "overrides": [] },
-      "gridPos": { "h": 4, "w": 5, "x": 14, "y": 0 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.8
+              },
+              {
+                "color": "red",
+                "value": 0.9
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 14,
+        "y": 0
+      },
       "id": 4,
-      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "1 - (node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint=\"/\"} / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint=\"/\"})", "legendFormat": "root", "refId": "A" }],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "1 - (node_filesystem_avail_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint=\"/\"} / node_filesystem_size_bytes{fstype!~\"tmpfs|overlay|squashfs\",mountpoint=\"/\"})",
+          "legendFormat": "root",
+          "refId": "A"
+        }
+      ],
       "title": "Root disk used",
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
-      "fieldConfig": { "defaults": { "unit": "short", "decimals": 2 }, "overrides": [] },
-      "gridPos": { "h": 4, "w": 5, "x": 19, "y": 0 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 19,
+        "y": 0
+      },
       "id": 5,
-      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "node_load1", "legendFormat": "load1", "refId": "A" }],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "node_load1",
+          "legendFormat": "load1",
+          "refId": "A"
+        }
+      ],
       "title": "load1 (2 vCPU)",
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
-      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1 }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 4
+      },
       "id": 6,
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "1 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m]))", "legendFormat": "cpu busy", "refId": "A" }],
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "1 - avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m]))",
+          "legendFormat": "cpu busy",
+          "refId": "A"
+        }
+      ],
       "title": "CPU busy",
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
-      "fieldConfig": { "defaults": { "unit": "short" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 4
+      },
       "id": 7,
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "node_load1", "legendFormat": "load1", "refId": "A" },
-        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "node_load5", "legendFormat": "load5", "refId": "B" },
-        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "node_load15", "legendFormat": "load15", "refId": "C" }
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "node_load1",
+          "legendFormat": "load1",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "node_load5",
+          "legendFormat": "load5",
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "node_load15",
+          "legendFormat": "load15",
+          "refId": "C"
+        }
       ],
       "title": "Load average",
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
-      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 12 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
       "id": 8,
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes", "legendFormat": "used", "refId": "A" },
-        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "node_memory_MemAvailable_bytes", "legendFormat": "available", "refId": "B" }
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes",
+          "legendFormat": "used",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "node_memory_MemAvailable_bytes",
+          "legendFormat": "available",
+          "refId": "B"
+        }
       ],
       "title": "Memory",
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
-      "fieldConfig": { "defaults": { "unit": "Bps" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 12 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
       "id": 9,
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "rate(node_network_receive_bytes_total{device!~\"lo|veth.*|br.*|docker.*|tunl.*\"}[5m])", "legendFormat": "rx {{device}}", "refId": "A" },
-        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "rate(node_network_transmit_bytes_total{device!~\"lo|veth.*|br.*|docker.*|tunl.*\"}[5m])", "legendFormat": "tx {{device}}", "refId": "B" }
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "rate(node_network_receive_bytes_total{device!~\"lo|veth.*|br.*|docker.*|tunl.*\"}[5m])",
+          "legendFormat": "rx {{device}}",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "rate(node_network_transmit_bytes_total{device!~\"lo|veth.*|br.*|docker.*|tunl.*\"}[5m])",
+          "legendFormat": "tx {{device}}",
+          "refId": "B"
+        }
       ],
       "title": "Network",
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
-      "fieldConfig": { "defaults": { "unit": "Bps" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 20 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 20
+      },
       "id": 10,
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "rate(node_disk_read_bytes_total{device!~\"loop.*|sr.*|ram.*\"}[5m])", "legendFormat": "read {{device}}", "refId": "A" },
-        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "rate(node_disk_written_bytes_total{device!~\"loop.*|sr.*|ram.*\"}[5m])", "legendFormat": "write {{device}}", "refId": "B" }
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "rate(node_disk_read_bytes_total{device!~\"loop.*|sr.*|ram.*\"}[5m])",
+          "legendFormat": "read {{device}}",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "rate(node_disk_written_bytes_total{device!~\"loop.*|sr.*|ram.*\"}[5m])",
+          "legendFormat": "write {{device}}",
+          "refId": "B"
+        }
       ],
       "title": "Disk I/O",
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
-      "fieldConfig": { "defaults": { "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] } }, "overrides": [] },
-      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 28 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 28
+      },
       "id": 11,
-      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "up{job=\"$cell\"}", "legendFormat": "jvm", "refId": "A" }],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "up{job=\"$cell\"}",
+          "legendFormat": "jvm",
+          "refId": "A"
+        }
+      ],
       "title": "JVM target",
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
-      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
-      "gridPos": { "h": 4, "w": 5, "x": 4, "y": 28 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 4,
+        "y": 28
+      },
       "id": 12,
-      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "sum(jvm_memory_used_bytes{job=\"$cell\",area=\"heap\"})", "legendFormat": "heap", "refId": "A" }],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "sum(jvm_memory_used_bytes{job=\"$cell\",area=\"heap\"})",
+          "legendFormat": "heap",
+          "refId": "A"
+        }
+      ],
       "title": "JVM heap used",
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
-      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1 }, "overrides": [] },
-      "gridPos": { "h": 4, "w": 5, "x": 9, "y": 28 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 9,
+        "y": 28
+      },
       "id": 13,
-      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "process_cpu_usage{job=\"$cell\"}", "legendFormat": "process cpu", "refId": "A" }],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "process_cpu_usage{job=\"$cell\"}",
+          "legendFormat": "process cpu",
+          "refId": "A"
+        }
+      ],
       "title": "JVM process CPU",
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
-      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
-      "gridPos": { "h": 4, "w": 5, "x": 14, "y": 28 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 14,
+        "y": 28
+      },
       "id": 14,
-      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "sum(rate(http_server_requests_seconds_count{job=\"$cell\"}[5m]))", "legendFormat": "rps", "refId": "A" }],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"$cell\"}[5m]))",
+          "legendFormat": "rps",
+          "refId": "A"
+        }
+      ],
       "title": "HTTP rps",
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
-      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
-      "gridPos": { "h": 4, "w": 5, "x": 19, "y": 28 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 5,
+        "x": 19,
+        "y": 28
+      },
       "id": 15,
-      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{job=\"$cell\"}[5m])))", "legendFormat": "p95", "refId": "A" }],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{job=\"$cell\"}[5m])))",
+          "legendFormat": "p95",
+          "refId": "A"
+        }
+      ],
       "title": "HTTP p95",
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
-      "fieldConfig": { "defaults": { "unit": "bytes" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 32 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 32
+      },
       "id": 16,
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "sum by (id) (jvm_memory_used_bytes{job=\"$cell\",area=\"heap\"})", "legendFormat": "used {{id}}", "refId": "A" },
-        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "sum by (id) (jvm_memory_max_bytes{job=\"$cell\",area=\"heap\"})", "legendFormat": "max {{id}}", "refId": "B" }
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "sum by (id) (jvm_memory_used_bytes{job=\"$cell\",area=\"heap\"})",
+          "legendFormat": "used {{id}}",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "sum by (id) (jvm_memory_max_bytes{job=\"$cell\",area=\"heap\"})",
+          "legendFormat": "max {{id}}",
+          "refId": "B"
+        }
       ],
       "title": "JVM heap",
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
-      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 32 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 32
+      },
       "id": 17,
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "histogram_quantile(0.95, sum by (le, uri) (rate(http_server_requests_seconds_bucket{job=\"$cell\"}[5m])))", "legendFormat": "p95 {{uri}}", "refId": "A" }
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le, uri) (rate(http_server_requests_seconds_bucket{job=\"$cell\"}[5m])))",
+          "legendFormat": "p95 {{uri}}",
+          "refId": "A"
+        }
       ],
       "title": "HTTP p95 by URI",
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
-      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 40 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 40
+      },
       "id": 18,
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "sum by (uri, status) (rate(http_server_requests_seconds_count{job=\"$cell\"}[5m]))", "legendFormat": "{{status}} {{uri}}", "refId": "A" }
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "sum by (uri, status) (rate(http_server_requests_seconds_count{job=\"$cell\"}[5m]))",
+          "legendFormat": "{{status}} {{uri}}",
+          "refId": "A"
+        }
       ],
       "title": "HTTP rate",
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
-      "fieldConfig": { "defaults": { "unit": "ops" }, "overrides": [] },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 40 },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 40
+      },
       "id": 19,
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "rate(jvm_gc_pause_seconds_count{job=\"$cell\"}[5m])", "legendFormat": "gc {{action}} {{cause}}", "refId": "A" }
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "rate(jvm_gc_pause_seconds_count{job=\"$cell\"}[5m])",
+          "legendFormat": "gc {{action}} {{cause}}",
+          "refId": "A"
+        }
       ],
       "title": "JVM GC pause rate",
       "type": "timeseries"
     },
     {
       "collapsed": false,
-      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 48 },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 48
+      },
       "id": 20,
       "title": "Injector",
       "type": "row"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
       "description": "Scrape of .140:9105 from load-sut :9091. Not Pushgateway. Down = exporter/ufw, not an empty JTL.",
-      "fieldConfig": { "defaults": { "thresholds": { "mode": "absolute", "steps": [{ "color": "red", "value": null }, { "color": "green", "value": 1 }] } }, "overrides": [] },
-      "gridPos": { "h": 4, "w": 4, "x": 0, "y": 49 },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 49
+      },
       "id": 24,
-      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "up{job=\"load-injector\"}", "legendFormat": "up", "refId": "A" }],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "up{job=\"load-injector\"}",
+          "legendFormat": "up",
+          "refId": "A"
+        }
+      ],
       "title": "injector up",
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
       "description": "load_injector_rps{injector,cell,run}. Empty while idle (no JTL window). Not SUT HTTP rps.",
-      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
-      "gridPos": { "h": 4, "w": 6, "x": 4, "y": 49 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 4,
+        "y": 49
+      },
       "id": 25,
-      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "load_injector_rps{cell=\"$cell\"}", "legendFormat": "{{injector}} {{run}}", "refId": "A" }],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "load_injector_rps{cell=\"$cell\"}",
+          "legendFormat": "{{injector}} {{run}}",
+          "refId": "A"
+        }
+      ],
       "title": "injector rps",
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
       "description": "load_injector_error_ratio{injector,cell,run} (0..1). Empty while idle.",
-      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1, "thresholds": { "mode": "absolute", "steps": [{ "color": "green", "value": null }, { "color": "yellow", "value": 0.01 }, { "color": "red", "value": 0.05 }] } }, "overrides": [] },
-      "gridPos": { "h": 4, "w": 7, "x": 10, "y": 49 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 0.01
+              },
+              {
+                "color": "red",
+                "value": 0.05
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 7,
+        "x": 10,
+        "y": 49
+      },
       "id": 26,
-      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "load_injector_error_ratio{cell=\"$cell\"}", "legendFormat": "{{injector}} {{run}}", "refId": "A" }],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "load_injector_error_ratio{cell=\"$cell\"}",
+          "legendFormat": "{{injector}} {{run}}",
+          "refId": "A"
+        }
+      ],
       "title": "injector error ratio",
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
       "description": "load_injector_p95_seconds{injector,cell,run}. Empty while idle. Not jmeter_*.",
-      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
-      "gridPos": { "h": 4, "w": 7, "x": 17, "y": 49 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 7,
+        "x": 17,
+        "y": 49
+      },
       "id": 27,
-      "options": { "colorMode": "background", "graphMode": "none", "justifyMode": "auto", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "textMode": "auto" },
-      "targets": [{ "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "load_injector_p95_seconds{cell=\"$cell\"}", "legendFormat": "{{injector}} {{run}}", "refId": "A" }],
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "load_injector_p95_seconds{cell=\"$cell\"}",
+          "legendFormat": "{{injector}} {{run}}",
+          "refId": "A"
+        }
+      ],
       "title": "injector p95",
       "type": "stat"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
       "description": "Client rps from load_injector_rps vs SUT HTTP. Crosshair shared with the rest of the dashboard (graphTooltip 1). HTML of the tool stays on /runs/.",
-      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
-      "gridPos": { "h": 6, "w": 8, "x": 0, "y": 53 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 53
+      },
       "id": 21,
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "sum(rate(http_server_requests_seconds_count{job=\"$cell\"}[1m]))", "legendFormat": "SUT", "refId": "A" },
-        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "load_injector_rps{cell=\"$cell\"}", "legendFormat": "injector {{injector}} {{run}}", "refId": "B" }
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "sum(rate(http_server_requests_seconds_count{job=\"$cell\"}[1m]))",
+          "legendFormat": "SUT",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "load_injector_rps{cell=\"$cell\"}",
+          "legendFormat": "injector {{injector}} {{run}}",
+          "refId": "B"
+        }
       ],
       "title": "rps SUT vs injector",
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
       "description": "Client error ratio. Empty when the injector is idle (GHA 1 VU does not scrape this exporter).",
-      "fieldConfig": { "defaults": { "unit": "percentunit", "min": 0, "max": 1 }, "overrides": [] },
-      "gridPos": { "h": 6, "w": 8, "x": 8, "y": 53 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 53
+      },
       "id": 22,
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "load_injector_error_ratio{cell=\"$cell\"}", "legendFormat": "injector {{injector}} {{run}}", "refId": "A" }
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "load_injector_error_ratio{cell=\"$cell\"}",
+          "legendFormat": "injector {{injector}} {{run}}",
+          "refId": "A"
+        }
       ],
       "title": "error ratio over time",
       "type": "timeseries"
     },
     {
-      "datasource": { "type": "prometheus", "uid": "load-sut" },
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
       "description": "Client p95 (load_injector_p95_seconds) vs SUT histogram. Not jmeter_* .",
-      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
-      "gridPos": { "h": 6, "w": 8, "x": 16, "y": 53 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 53
+      },
       "id": 23,
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
       "targets": [
-        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{job=\"$cell\"}[1m])))", "legendFormat": "SUT p95", "refId": "A" },
-        { "datasource": { "type": "prometheus", "uid": "load-sut" }, "expr": "load_injector_p95_seconds{cell=\"$cell\"}", "legendFormat": "injector p95 {{run}}", "refId": "B" }
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{job=\"$cell\"}[1m])))",
+          "legendFormat": "SUT p95",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "load_injector_p95_seconds{cell=\"$cell\"}",
+          "legendFormat": "injector p95 {{run}}",
+          "refId": "B"
+        }
       ],
       "title": "p95 SUT vs injector",
       "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 59
+      },
+      "id": 28,
+      "title": "JMeter",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "description": "load_injector_rps{injector=~\".*-jmeter\"}. Empty while JMeter is idle.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 60
+      },
+      "id": 30,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "load_injector_rps{cell=\"$cell\",injector=~\".*-jmeter\"}",
+          "legendFormat": "{{injector}} {{run}}",
+          "refId": "A"
+        }
+      ],
+      "title": "JMeter rps",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "description": "load_injector_error_ratio{injector=~\".*-jmeter\"}. Empty while idle.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 60
+      },
+      "id": 31,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "load_injector_error_ratio{cell=\"$cell\",injector=~\".*-jmeter\"}",
+          "legendFormat": "{{injector}} {{run}}",
+          "refId": "A"
+        }
+      ],
+      "title": "JMeter error ratio",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "description": "load_injector_p95_seconds{injector=~\".*-jmeter\"}. Client p95, not SUT histogram.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 60
+      },
+      "id": 32,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "load_injector_p95_seconds{cell=\"$cell\",injector=~\".*-jmeter\"}",
+          "legendFormat": "{{injector}} {{run}}",
+          "refId": "A"
+        }
+      ],
+      "title": "JMeter p95",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 66
+      },
+      "id": 29,
+      "title": "Gatling",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "description": "load_injector_rps{injector=~\".*-gatling\"}. Empty while Gatling is idle.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 67
+      },
+      "id": 33,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "load_injector_rps{cell=\"$cell\",injector=~\".*-gatling\"}",
+          "legendFormat": "{{injector}} {{run}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Gatling rps",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "description": "load_injector_error_ratio{injector=~\".*-gatling\"}. Empty while idle.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 67
+      },
+      "id": 34,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "load_injector_error_ratio{cell=\"$cell\",injector=~\".*-gatling\"}",
+          "legendFormat": "{{injector}} {{run}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Gatling error ratio",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "description": "load_injector_p95_seconds{injector=~\".*-gatling\"}. Client p95, not SUT histogram.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 67
+      },
+      "id": 35,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "load_injector_p95_seconds{cell=\"$cell\",injector=~\".*-gatling\"}",
+          "legendFormat": "{{injector}} {{run}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Gatling p95",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 73
+      },
+      "id": 36,
+      "title": "k6",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "description": "load_injector_rps{injector=~\".*-k6\"}. Empty while k6 is idle.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 74
+      },
+      "id": 37,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "load_injector_rps{cell=\"$cell\",injector=~\".*-k6\"}",
+          "legendFormat": "{{injector}} {{run}}",
+          "refId": "A"
+        }
+      ],
+      "title": "k6 rps",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "description": "load_injector_error_ratio{injector=~\".*-k6\"}. Empty while idle.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 74
+      },
+      "id": 38,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "load_injector_error_ratio{cell=\"$cell\",injector=~\".*-k6\"}",
+          "legendFormat": "{{injector}} {{run}}",
+          "refId": "A"
+        }
+      ],
+      "title": "k6 error ratio",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "load-sut"
+      },
+      "description": "load_injector_p95_seconds{injector=~\".*-k6\"}. Client p95, not SUT histogram.",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 74
+      },
+      "id": 39,
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "expr": "load_injector_p95_seconds{cell=\"$cell\",injector=~\".*-k6\"}",
+          "legendFormat": "{{injector}} {{run}}",
+          "refId": "A"
+        }
+      ],
+      "title": "k6 p95",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 80
+      },
+      "id": 40,
+      "title": "Locust",
+      "type": "row",
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_rps{injector=\"python-locust\"}. Empty while Locust is idle.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 0,
+            "y": 81
+          },
+          "id": 41,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_rps{cell=\"$cell\",injector=\"python-locust\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Locust rps",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_error_ratio{injector=\"python-locust\"}. Empty while idle.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "min": 0,
+              "max": 1
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 8,
+            "y": 81
+          },
+          "id": 42,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_error_ratio{cell=\"$cell\",injector=\"python-locust\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Locust error ratio",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_p95_seconds{injector=\"python-locust\"}. Client p95, not SUT histogram.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 16,
+            "y": 81
+          },
+          "id": 43,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_p95_seconds{cell=\"$cell\",injector=\"python-locust\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Locust p95",
+          "type": "timeseries"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 81
+      },
+      "id": 44,
+      "title": "Yandex.Tank",
+      "type": "row",
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_rps{injector=\"python-yandex_tank\"}. Empty while Tank is idle.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 0,
+            "y": 82
+          },
+          "id": 45,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_rps{cell=\"$cell\",injector=\"python-yandex_tank\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Tank rps",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_error_ratio{injector=\"python-yandex_tank\"}. Empty while idle.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "min": 0,
+              "max": 1
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 8,
+            "y": 82
+          },
+          "id": 46,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_error_ratio{cell=\"$cell\",injector=\"python-yandex_tank\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Tank error ratio",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_p95_seconds{injector=\"python-yandex_tank\"}. Client p95, not SUT histogram.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 16,
+            "y": 82
+          },
+          "id": 47,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_p95_seconds{cell=\"$cell\",injector=\"python-yandex_tank\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Tank p95",
+          "type": "timeseries"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 82
+      },
+      "id": 48,
+      "title": "Vegeta",
+      "type": "row",
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_rps{injector=\"go-vegeta\"}. Empty while Vegeta is idle.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 0,
+            "y": 83
+          },
+          "id": 49,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_rps{cell=\"$cell\",injector=\"go-vegeta\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Vegeta rps",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_error_ratio{injector=\"go-vegeta\"}. Empty while idle.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "min": 0,
+              "max": 1
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 8,
+            "y": 83
+          },
+          "id": 50,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_error_ratio{cell=\"$cell\",injector=\"go-vegeta\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Vegeta error ratio",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_p95_seconds{injector=\"go-vegeta\"}. Client p95, not SUT histogram.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 16,
+            "y": 83
+          },
+          "id": 51,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_p95_seconds{cell=\"$cell\",injector=\"go-vegeta\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Vegeta p95",
+          "type": "timeseries"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 83
+      },
+      "id": 52,
+      "title": "Artillery",
+      "type": "row",
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_rps{injector=~\".*-artillery\"}. Empty while Artillery is idle.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 0,
+            "y": 84
+          },
+          "id": 53,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_rps{cell=\"$cell\",injector=~\".*-artillery\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Artillery rps",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_error_ratio{injector=~\".*-artillery\"}. Empty while idle.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "min": 0,
+              "max": 1
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 8,
+            "y": 84
+          },
+          "id": 54,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_error_ratio{cell=\"$cell\",injector=~\".*-artillery\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Artillery error ratio",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_p95_seconds{injector=~\".*-artillery\"}. Client p95, not SUT histogram.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 16,
+            "y": 84
+          },
+          "id": 55,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_p95_seconds{cell=\"$cell\",injector=~\".*-artillery\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Artillery p95",
+          "type": "timeseries"
+        }
+      ]
     }
   ],
   "schemaVersion": 39,
-  "tags": ["qa.guru", "load-sut"],
-  "templating": { "list": [{ "current": { "selected": true, "text": "backend-java-spring", "value": "backend-java-spring" }, "hide": 0, "includeAll": false, "label": "cell", "multi": false, "name": "cell", "options": [{ "selected": true, "text": "backend-java-spring", "value": "backend-java-spring" }, { "selected": false, "text": "backend-kotlin-spring", "value": "backend-kotlin-spring" }, { "selected": false, "text": "backend-python-flask", "value": "backend-python-flask" }, { "selected": false, "text": "backend-python-fastapi", "value": "backend-python-fastapi" }, { "selected": false, "text": "backend-python-django", "value": "backend-python-django" }], "query": "backend-java-spring,backend-kotlin-spring,backend-python-flask,backend-python-fastapi,backend-python-django", "skipUrlSync": false, "type": "custom" }] },
-  "time": { "from": "now-1h", "to": "now" },
+  "tags": [
+    "qa.guru",
+    "load-sut"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": "backend-java-spring",
+          "value": "backend-java-spring"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "cell",
+        "multi": false,
+        "name": "cell",
+        "options": [
+          {
+            "selected": true,
+            "text": "backend-java-spring",
+            "value": "backend-java-spring"
+          },
+          {
+            "selected": false,
+            "text": "backend-kotlin-spring",
+            "value": "backend-kotlin-spring"
+          },
+          {
+            "selected": false,
+            "text": "backend-python-flask",
+            "value": "backend-python-flask"
+          },
+          {
+            "selected": false,
+            "text": "backend-python-fastapi",
+            "value": "backend-python-fastapi"
+          },
+          {
+            "selected": false,
+            "text": "backend-python-django",
+            "value": "backend-python-django"
+          },
+          {
+            "selected": false,
+            "text": "backend-go-gin",
+            "value": "backend-go-gin"
+          },
+          {
+            "selected": false,
+            "text": "backend-go-stdlib",
+            "value": "backend-go-stdlib"
+          },
+          {
+            "selected": false,
+            "text": "backend-javascript-express",
+            "value": "backend-javascript-express"
+          },
+          {
+            "selected": false,
+            "text": "backend-javascript-nest",
+            "value": "backend-javascript-nest"
+          },
+          {
+            "selected": false,
+            "text": "backend-typescript-express",
+            "value": "backend-typescript-express"
+          },
+          {
+            "selected": false,
+            "text": "backend-typescript-nest",
+            "value": "backend-typescript-nest"
+          },
+          {
+            "selected": false,
+            "text": "backend-csharp-aspnet",
+            "value": "backend-csharp-aspnet"
+          },
+          {
+            "selected": false,
+            "text": "backend-rust-axum",
+            "value": "backend-rust-axum"
+          }
+        ],
+        "query": "backend-java-spring,backend-kotlin-spring,backend-python-flask,backend-python-fastapi,backend-python-django,backend-go-gin,backend-go-stdlib,backend-javascript-express,backend-javascript-nest,backend-typescript-express,backend-typescript-nest,backend-csharp-aspnet,backend-rust-axum",
+        "skipUrlSync": false,
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
   "timepicker": {},
   "timezone": "browser",
   "title": "Load SUT observer",
   "uid": "load-sut-observer",
-  "version": 5
+  "version": 7
 }
