@@ -2,7 +2,7 @@
   "annotations": {
     "list": []
   },
-  "description": "Isolated load SUT (load.autotests.ai). Host/JVM/HTTP follow $cell. Shared Injector strip overlays client vs SUT. Per-tool rows (JMeter, Gatling, k6 open; Locust / Tank / Vegeta / Artillery collapsed) filter load_injector_* by injector label — not jmeter_* / gatling_* / k6_* / artillery_* series. Tool HTML stays on /runs/.",
+  "description": "Isolated load SUT (load.autotests.ai). Host/JVM/HTTP follow $cell. Shared Injector strip overlays client vs SUT. Per-tool rows (JMeter, Gatling, k6 open; Locust / Tank / Vegeta / Artillery / Goose / NBomber / wrk collapsed) filter load_injector_* by injector label — not jmeter_* / gatling_* / k6_* / artillery_* series. Tool HTML stays on /runs/.",
   "editable": false,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -2244,6 +2244,405 @@
           "type": "timeseries"
         }
       ]
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 84
+      },
+      "id": 56,
+      "title": "Goose",
+      "type": "row",
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_rps{injector=\"rust-goose\"}. Empty while Goose is idle.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 0,
+            "y": 85
+          },
+          "id": 57,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_rps{cell=\"$cell\",injector=\"rust-goose\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Goose rps",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_error_ratio{injector=\"rust-goose\"}. Empty while idle.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "min": 0,
+              "max": 1
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 8,
+            "y": 85
+          },
+          "id": 58,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_error_ratio{cell=\"$cell\",injector=\"rust-goose\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Goose error ratio",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_p95_seconds{injector=\"rust-goose\"}. Client p95, not SUT histogram.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 16,
+            "y": 85
+          },
+          "id": 59,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_p95_seconds{cell=\"$cell\",injector=\"rust-goose\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "Goose p95",
+          "type": "timeseries"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 91
+      },
+      "id": 60,
+      "title": "NBomber",
+      "type": "row",
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_rps{injector=\"csharp-nbomber\"}. Empty while NBomber is idle.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 0,
+            "y": 92
+          },
+          "id": 61,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_rps{cell=\"$cell\",injector=\"csharp-nbomber\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "NBomber rps",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_error_ratio{injector=\"csharp-nbomber\"}. Empty while idle.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "min": 0,
+              "max": 1
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 8,
+            "y": 92
+          },
+          "id": 62,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_error_ratio{cell=\"$cell\",injector=\"csharp-nbomber\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "NBomber error ratio",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_p95_seconds{injector=\"csharp-nbomber\"}. Client p95, not SUT histogram.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 16,
+            "y": 92
+          },
+          "id": 63,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_p95_seconds{cell=\"$cell\",injector=\"csharp-nbomber\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "NBomber p95",
+          "type": "timeseries"
+        }
+      ]
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 92
+      },
+      "id": 64,
+      "title": "wrk",
+      "type": "row",
+      "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_rps{injector=\"lua-wrk\"}. Empty while wrk is idle.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "reqps"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 0,
+            "y": 93
+          },
+          "id": 65,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_rps{cell=\"$cell\",injector=\"lua-wrk\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "wrk rps",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_error_ratio{injector=\"lua-wrk\"}. Empty while idle.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "percentunit",
+              "min": 0,
+              "max": 1
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 8,
+            "y": 93
+          },
+          "id": 66,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_error_ratio{cell=\"$cell\",injector=\"lua-wrk\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "wrk error ratio",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "load-sut"
+          },
+          "description": "load_injector_p95_seconds{injector=\"lua-wrk\"}. Client p95, not SUT histogram.",
+          "fieldConfig": {
+            "defaults": {
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 6,
+            "w": 8,
+            "x": 16,
+            "y": 93
+          },
+          "id": 67,
+          "options": {
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom"
+            }
+          },
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "load-sut"
+              },
+              "expr": "load_injector_p95_seconds{cell=\"$cell\",injector=\"lua-wrk\"}",
+              "legendFormat": "{{injector}} {{run}}",
+              "refId": "A"
+            }
+          ],
+          "title": "wrk p95",
+          "type": "timeseries"
+        }
+      ]
     }
   ],
   "schemaVersion": 39,
@@ -2345,5 +2744,5 @@
   "timezone": "browser",
   "title": "Load SUT observer",
   "uid": "load-sut-observer",
-  "version": 7
+  "version": 10
 }
