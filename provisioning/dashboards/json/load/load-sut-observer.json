@@ -2737,12 +2737,12 @@
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-2d",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Load SUT observer",
   "uid": "load-sut-observer",
-  "version": 10
+  "version": 11
 }
