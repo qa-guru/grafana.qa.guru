@@ -2,7 +2,8 @@
 """Grafana SSO — generic_oauth against https://auth.qa.guru (phase 11.qa-guru-identity).
 
 Grafana OSS has role_attribute_path (JMESPath) but no Team Sync (Enterprise), so roles come
-from the groups claim and Grafana teams stay manual. /students is denied by role_attribute_strict.
+from the groups claim and Grafana teams stay manual. /staff Admin, /mentors and /students Viewer
+on the Load folder; Infra folders stay Admin/Editor. role_attribute_strict still denies unknown groups.
 
 Secrets live in ~/.config/grafana (mode 600) and in /opt/grafana.qa.guru/.env (600) on Box2.
 Nothing secret is printed.
@@ -10,7 +11,7 @@ Nothing secret is printed.
   python3 deploy/oidc.py inventory     # gate: users + orgs + teams + service accounts, off-box
   python3 deploy/oidc.py dump          # gate: grafana.db + grafana.ini snapshot before the change
   python3 deploy/oidc.py seed-secret   # client secret + post-logout redirect on the Keycloak side
-  python3 deploy/oidc.py configure     # deploy grafana.ini + secret, recreate, wait for health
+  python3 deploy/oidc.py configure     # deploy grafana.ini + provisioning + secret, folder ACL
   python3 deploy/oidc.py login-check   # real sign-in with the pilot people
   python3 deploy/oidc.py probe-staff   # /staff → Admin on a disposable person, then remove it
   python3 deploy/oidc.py logout-check  # staff-pilot + mentor-pilot: end_session, Keycloak asks for password
@@ -76,10 +77,28 @@ BREAK_GLASS = {"admin"}
 LOCAL_TEACHERS = {"venam1204@gmail.com", "suslovdeniss59@gmail.com"}
 
 # group → Grafana role. Anything else falls through and role_attribute_strict denies the login.
-ROLE_BY_GROUP = {"/staff": "Admin", "/mentors": "Viewer"}
+ROLE_BY_GROUP = {"/staff": "Admin", "/mentors": "Viewer", "/students": "Viewer"}
 ROLE_ATTRIBUTE_PATH = (
-    "contains(groups[*], '/staff') && 'Admin' || contains(groups[*], '/mentors') && 'Viewer'"
+    "contains(groups[*], '/staff') && 'Admin' || contains(groups[*], '/mentors') && 'Viewer' "
+    "|| contains(groups[*], '/students') && 'Viewer'"
 )
+# Folder ACL (OSS). Viewer sees Load reports; Box/GPU observers stay off the student contour.
+# permission: 1 View · 2 Edit · 4 Admin. POST replaces the list.
+FOLDER_UID_LOAD = "load"
+FOLDER_UID_INFRA = "infra"
+FOLDER_ACL = {
+    FOLDER_UID_LOAD: (
+        {"role": "Viewer", "permission": 1},
+        {"role": "Editor", "permission": 1},
+        {"role": "Admin", "permission": 4},
+    ),
+    FOLDER_UID_INFRA: (
+        {"role": "Editor", "permission": 1},
+        {"role": "Admin", "permission": 4},
+    ),
+}
+LOAD_DASHBOARD_UID = "load-sut-observer"
+INFRA_DASHBOARD_UIDS = ("box1-observer", "box2-observer", "box3-observer", "ollama-gpu")
 
 
 # ---------------------------------------------------------------------------
@@ -421,6 +440,7 @@ def cmd_configure() -> int:
     subprocess.run([str(root / "deploy" / "install-box2.sh")], check=True, cwd=root)
     health = wait_health()
     print(f"health database={health['database']} version={health['version']}")
+    apply_folder_acl()
 
     settings = gapi("/api/admin/settings")
     oauth = settings.get("auth.generic_oauth", {})
@@ -429,9 +449,62 @@ def cmd_configure() -> int:
     print(f"scopes={oauth.get('scopes')!r}")
     print(f"role_attribute_path={oauth.get('role_attribute_path')!r}")
     print(f"signout_redirect_url={oauth.get('signout_redirect_url')!r}")
+    if oauth.get("role_attribute_path") != ROLE_ATTRIBUTE_PATH:
+        raise SystemExit("role_attribute_path on the host is not the Load-course mapping")
     if oauth.get("signout_redirect_url") != SIGNOUT_URL:
         raise SystemExit("signout_redirect_url is not Keycloak end_session for client grafana")
     return 0
+
+
+def wait_folders(uids: tuple[str, ...], timeout: int = 90) -> list[dict[str, Any]]:
+    deadline = time.time() + timeout
+    last: list[dict[str, Any]] = []
+    while time.time() < deadline:
+        last = gapi("/api/folders") or []
+        have = {f.get("uid") for f in last}
+        if set(uids) <= have:
+            return last
+        time.sleep(2)
+    raise SystemExit(f"folders {uids} not provisioned; have {[f.get('uid') for f in last]}")
+
+
+def apply_folder_acl() -> None:
+    folders = wait_folders((FOLDER_UID_LOAD, FOLDER_UID_INFRA))
+    for folder in folders:
+        uid = folder.get("uid") or ""
+        items = FOLDER_ACL[FOLDER_UID_LOAD] if uid == FOLDER_UID_LOAD else FOLDER_ACL[FOLDER_UID_INFRA]
+        gapi(f"/api/folders/{uid}/permissions", method="POST", body={"items": list(items)})
+        print(f"OK   folder {uid!r} ({folder.get('title')}) ACL {len(items)} items")
+    apply_datasource_acl()
+
+
+def apply_datasource_acl() -> None:
+    """Viewer may query load-sut; Box2 Prometheus stays Admin.
+
+    Folder ACL hides Infra dashboards either way. If this endpoint is missing in OSS,
+    Explore on the default Prometheus can still leak host metrics — verify warns.
+    """
+    specs = (
+        (
+            "load-sut",
+            [
+                {"builtInRole": "Viewer", "permission": "Query"},
+                {"builtInRole": "Editor", "permission": "Query"},
+                {"builtInRole": "Admin", "permission": "Query"},
+            ],
+        ),
+        ("prometheus", [{"builtInRole": "Admin", "permission": "Query"}]),
+    )
+    for uid, permissions in specs:
+        try:
+            gapi(
+                f"/api/datasources/uid/{uid}/permissions",
+                method="POST",
+                body={"permissions": permissions},
+            )
+            print(f"OK   datasource {uid} permissions")
+        except RuntimeError as exc:
+            print(f"WARN datasource {uid} permissions skipped: {exc}")
 
 
 # ---------------------------------------------------------------------------
@@ -488,6 +561,11 @@ class Session:
                 return resp.status, json.loads(resp.read() or b"null")
         except urllib.error.HTTPError as exc:
             return exc.code, None
+
+
+def can_get_dashboard(sess: Session, uid: str) -> bool:
+    code, _ = sess.api(f"/api/dashboards/uid/{uid}")
+    return code == 200
 
 
 def kc_form_error(page: str) -> str | None:
@@ -566,7 +644,7 @@ def pilots() -> list[tuple[str, str, str, str | None]]:
     rows = [
         ("staff", "PILOT_STAFF_USERNAME", "PILOT_STAFF_PASSWORD", "Admin"),
         ("mentors", "PILOT_MENTOR_USERNAME", "PILOT_MENTOR_PASSWORD", "Viewer"),
-        ("students", "PILOT_STUDENT_USERNAME", "PILOT_STUDENT_PASSWORD", None),
+        ("students", "PILOT_STUDENT_USERNAME", "PILOT_STUDENT_PASSWORD", "Viewer"),
     ]
     out = []
     for kind, ukey, pkey, expect in rows:
@@ -581,7 +659,7 @@ def cmd_login_check() -> int:
     rc = 0
     for kind, user, password, expect in pilots():
         res = oidc_login(user, password)
-        if expect is None:  # /students must not get in at all
+        if expect is None:
             ok = res["api_code"] != 200
             print(f"{'OK  ' if ok else 'FAIL'} {kind:<9} {user} → denied={ok} api={res['api_code']}")
             if res["error"]:
@@ -592,6 +670,15 @@ def cmd_login_check() -> int:
                 f"{'OK  ' if ok else 'FAIL'} {kind:<9} {user} → login={res['grafana_login']} "
                 f"role={res['org_role']} (want {expect}) grafana_admin={res['grafana_admin']}"
             )
+            if kind == "students" and ok:
+                sees_load = can_get_dashboard(res["session"], LOAD_DASHBOARD_UID)
+                leaked = [uid for uid in INFRA_DASHBOARD_UIDS if can_get_dashboard(res["session"], uid)]
+                folder_ok = sees_load and not leaked
+                print(
+                    f"{'OK  ' if folder_ok else 'FAIL'} {kind:<9} dashboards "
+                    f"load={sees_load} infra_leaked={leaked or '-'}"
+                )
+                ok = ok and folder_ok
         if not ok:
             print(f"       landed={res['landed']} http={res['http']} error={res['error']}")
             rc = 1
@@ -787,11 +874,11 @@ def cmd_verify() -> int:
         "otherwise Grafana logins become emails, not handles",
     )
     check(
-        "role_attribute_path maps /staff and /mentors",
+        "role_attribute_path maps /staff /mentors /students",
         oauth.get("role_attribute_path") == ROLE_ATTRIBUTE_PATH,
         repr(oauth.get("role_attribute_path")),
     )
-    check("role_attribute_strict = true", oauth.get("role_attribute_strict") == "true", "/students has no role → denied")
+    check("role_attribute_strict = true", oauth.get("role_attribute_strict") == "true", "unknown groups stay denied")
     check("skip_org_role_sync = false", oauth.get("skip_org_role_sync") == "false")
     check(
         "allow_assign_grafana_admin = false",
@@ -847,6 +934,13 @@ def cmd_verify() -> int:
                 res["api_code"] == 200 and res["org_role"] == expect and res["grafana_login"] == user,
                 f"login={res['grafana_login']} role={res['org_role']} grafana_admin={res['grafana_admin']}",
             )
+            if kind == "students" and res["api_code"] == 200:
+                check(
+                    f"{kind} sees {LOAD_DASHBOARD_UID}",
+                    can_get_dashboard(res["session"], LOAD_DASHBOARD_UID),
+                )
+                leaked = [uid for uid in INFRA_DASHBOARD_UIDS if can_get_dashboard(res["session"], uid)]
+                check(f"{kind} does not see Infra observers", not leaked, ",".join(leaked))
 
     prom = ssh(
         BOX2,

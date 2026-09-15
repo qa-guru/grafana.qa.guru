@@ -48,7 +48,7 @@ python3 deploy/oidc.py break-glass   # 6. admin входит при остано
 
 - **Секрет живёт только в env.** `grafana.ini` в git несёт всё, кроме `client_secret`; сам секрет — `~/.config/grafana/oidc.env` → `/opt/grafana.qa.guru/.env` (600). `install-box2.sh` перегенерирует `.env` с нуля, поэтому он до-эмитит секрет сам и **отказывается** деплоить, если `grafana.ini` включает `generic_oauth`, а секрета нет. Без этого обычная переустановка молча выключала бы SSO.
 - **`login_attribute_path = preferred_username` не трогать.** Grafana по умолчанию читает только `login` / `username`, а Keycloak присылает `preferred_username` — без этой строки login становится email-ом, и канон handle рассыпается.
-- **`role_attribute_strict = true` — это и есть запрет для `/students`.** В выражении роли для них нет; уберёшь флаг — все 98 студентов realm-а получат `auto_assign_org_role` (Viewer).
+- **`role_attribute_strict = true` остаётся.** Без него роль не находится, и Grafana выдаёт `auto_assign_org_role` (Viewer) кому угодно без групп. `/students` теперь **есть** в выражении (Viewer, папка Load). Флаг режет неизвестные группы, не поток.
 - **`scopes` без `groups`.** В Keycloak нет такого client scope, claim приходит от маппера клиента; запрос scope `groups` даёт `invalid_scope`.
 - **`disable_login_form` не включать** — см. § SSO в [README клона](../README.md).
 - **`dump` гасит контейнер на несколько секунд.** В образе нет `sqlite3`, а копия работающего файла базы — не дамп.

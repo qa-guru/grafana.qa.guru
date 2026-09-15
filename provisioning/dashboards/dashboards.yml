@@ -1,11 +1,24 @@
 apiVersion: 1
 providers:
-  - name: qa-guru
+  # Load course — Viewer (/students, /mentors) can open these.
+  - name: load
     orgId: 1
-    folder: qa.guru
+    folder: Load
+    folderUid: load
     type: file
     disableDeletion: false
     updateIntervalSeconds: 30
     allowUiUpdates: false
     options:
-      path: /etc/grafana/provisioning/dashboards/json
+      path: /etc/grafana/provisioning/dashboards/json/load
+  # Host observers — Admin (and Editor) only. Folder ACL is applied by deploy/oidc.py.
+  - name: infra
+    orgId: 1
+    folder: Infra
+    folderUid: infra
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: false
+    options:
+      path: /etc/grafana/provisioning/dashboards/json/infra

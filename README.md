@@ -26,6 +26,8 @@ curl -sf http://127.0.0.1:3031/api/health
 
 Локальный порт **3031**, чтобы не пересечься с Grafana внутри контейнера (`:3000`) и с design-system `:3000`.
 
+Прод: вход **Sign in with QA.GURU** (Keycloak). Студент видит папку Load (дашборд нагрузки). Папка Infra (боксы, GPU) — staff. Prometheus снаружи по-прежнему нет.
+
 Чтобы Grafana увидела Prometheus (имя сервиса `prometheus`):
 
 ```bash
@@ -34,7 +36,7 @@ docker network create qa-guru-observe 2>/dev/null || true
 docker compose -f docker-compose.yml -f docker-compose.observe.yml up -d
 ```
 
-Дашборд **Box2 observer** (`box2-observer.json`) — CPU/RAM/load (`job=node`). **Box1 observer** (`box1-observer.json`) — host + Selenoid hub `/status`. **Box3 observer** (`box3-observer.json`) — zoo host. **Load SUT observer** (`load-sut-observer.json`, datasource `load-sut`) — node-exporter на load-VM + JVM/HTTP p95 с `$cell` + overlay клиент vs SUT + ряды по школам (JMeter / Gatling / k6; Locust / Tank / Vegeta / Artillery свёрнуты). Серии `load_injector_*{injector,cell,run}` (не `jmeter_*` / `gatling_*` / `k6_*` / `artillery_*`); scrape `.140:9105` с load-sut `:9091`, не Pushgateway; HTML инструмента на `/runs/`. **ollama.qa.guru GPU** (`ollama-gpu.json`) — VRAM / loaded models / exporter. На Box2 Prometheus снаружи `:9091` (host `:9090` = selenoid-warm-pool).
+Дашборд **Box2 observer** (`box2-observer.json`) — CPU/RAM/load (`job=node`). **Box1 observer** (`box1-observer.json`) — host + Selenoid hub `/status`. **Box3 observer** (`box3-observer.json`) — zoo host. Все три — папка **Infra** (Admin/Editor). **Load SUT observer** (`load-sut-observer.json`, datasource `load-sut`, папка **Load**) — node-exporter на load-VM + JVM/HTTP p95 с `$cell` + overlay клиент vs SUT + ряды по школам (JMeter / Gatling / k6; Locust / Tank / Vegeta / Artillery свёрнуты). Серии `load_injector_*{injector,cell,run}` (не `jmeter_*` / `gatling_*` / `k6_*` / `artillery_*`); scrape `.140:9105` с load-sut `:9091`, не Pushgateway; HTML инструмента на `/runs/`. **ollama.qa.guru GPU** (`ollama-gpu.json`) — VRAM / loaded models / exporter, папка Infra. На Box2 Prometheus снаружи `:9091` (host `:9090` = selenoid-warm-pool).
 
 ## Структура
 
@@ -57,8 +59,8 @@ docker compose -f docker-compose.yml -f docker-compose.observe.yml up -d
 | Группа в Keycloak | Роль в Grafana |
 |---|---|
 | `/staff` | Admin (орг, **не** server admin) |
-| `/mentors` | Viewer |
-| `/students` | вход запрещён — `role_attribute_strict` |
+| `/mentors` | Viewer (папка Load; Infra скрыта folder ACL) |
+| `/students` | Viewer (папка Load; Infra скрыта folder ACL) |
 
 Парольную форму (`disable_login_form`) **не** выключать: это единственная дверь для break-glass `admin` и для двух преподавателей курса по нагрузке, чьи логины — адреса из GetCourse и которых нет в Keycloak.
 
