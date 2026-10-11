@@ -70,10 +70,12 @@ SIGNOUT_URL = (
     f"&post_logout_redirect_uri={urllib.parse.quote(POST_LOGOUT_URI, safe='')}"
 )
 
-# Break-glass: the local admin must survive every realm swap (ADR 017).
+# Break-glass: the local admin user is kept for scripts and basic-auth API (ADR 017 §9).
+# The UI form is off by owner decision — admin has no web login while IdP is down.
 BREAK_GLASS = {"admin"}
-# Load-course teachers: logins are GetCourse emails, not handles, and they are not in Keycloak.
-# They keep the password form — which is why disable_login_form stays false.
+# Load-course teachers: GetCourse-email logins absent from Keycloak. Accounts stay
+# untouched, but with disable_login_form they cannot sign in via the UI anymore —
+# they need Keycloak identities to come back.
 LOCAL_TEACHERS = {"venam1204@gmail.com", "suslovdeniss59@gmail.com"}
 
 # group → Grafana role. Anything else falls through and role_attribute_strict denies the login.
@@ -222,9 +224,9 @@ def kc_group_members(token: str, name: str) -> list[str]:
 def classify(user: dict[str, Any]) -> tuple[str, str]:
     login = user["login"]
     if login in BREAK_GLASS:
-        return "break-glass", "local admin; never federated; keeps the password form"
+        return "break-glass", "local admin; never federated; API/basic auth only — no UI form"
     if login in LOCAL_TEACHERS:
-        return "local-teacher", "login is a GetCourse email, absent from Keycloak; stays local"
+        return "local-teacher", "GetCourse email, absent from Keycloak; locked out until federated"
     return "review", "decide in the window before federating"
 
 
@@ -837,7 +839,7 @@ def cmd_verify() -> int:
             f"id/email stable={same} role={org_users.get(login, {}).get('role')}",
         )
 
-    # The teachers are the reason the password form stays: prove they can still get in.
+    # The password form is gone: the same local credentials must now be rejected.
     teachers = load_kv(TEACHERS_ENV_FILE)
     for prefix in ("MARAT", "DENIS"):
         login, password = teachers.get(f"{prefix}_LOGIN"), teachers.get(f"{prefix}_PASSWORD")
@@ -845,8 +847,8 @@ def cmd_verify() -> int:
             continue
         code, got = form_login(login, password)
         check(
-            f"teacher {login} still signs in with the form",
-            code == 200 and got == login,
+            f"local login {login} rejected (form disabled)",
+            code != 200 and got != login,
             f"api/user {code}",
         )
 
@@ -899,7 +901,7 @@ def cmd_verify() -> int:
         grafana_attrs.get("post.logout.redirect.uris") == POST_LOGOUT_URI,
         grafana_attrs.get("post.logout.redirect.uris", "-"),
     )
-    check("disable_login_form = false", auth.get("disable_login_form") == "false", "break-glass + local teachers")
+    check("disable_login_form = true", auth.get("disable_login_form") == "true", "SSO-only; no local password form")
     check(
         "oauth_allow_insecure_email_lookup = false",
         auth.get("oauth_allow_insecure_email_lookup") == "false",
@@ -983,8 +985,8 @@ def cmd_break_glass() -> int:
     try:
         time.sleep(3)
         code, login = form_login(env["GRAFANA_ADMIN_USER"], env["GRAFANA_ADMIN_PASSWORD"])
-        ok = code == 200 and login == env["GRAFANA_ADMIN_USER"]
-        print(f"{'OK  ' if ok else 'FAIL'} password form: {login} (api/user {code})")
+        ok = code != 200 and login != env["GRAFANA_ADMIN_USER"]
+        print(f"{'OK  ' if ok else 'FAIL'} password form rejects admin too (api/user {code})")
         rc |= 0 if ok else 1
 
         users = gapi("/api/users?perpage=5")
